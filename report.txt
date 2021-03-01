@@ -1,0 +1,311 @@
+Descriptions of Public Member Functions by Class:
+
+ACTORS:
+Class Actor
+Actor::Actor(StudentWorld* world,int imageID,int startX, int startY, int startDirection,double size,int depth) :GraphObject(imageID, startX, startY, startDirection, size, depth) {m_world = world;}
+Agent is a derivative of Actor. Since parameters are different for every agent, nothing was predefined and an initializer list was used.
+virtual void doSomething() = 0;
+Pure virtual due to this function changing completely with every single type of Actor
+virtual bool isCollisionAvoidanceWorthyActor() { return false; }
+Bool function used to differentiate between collision avoidance worthy actor. I made this function virtual in order to define all actors as false. For more specialized actors, I simply need to change it to true, and for those that are not collision avoidance worthy (such as goodies), no additional code is necessary
+virtual bool isDead() {return false;}
+Bool function used to keep track of status. Virtual to redefine later but also naturally returning false for simpler actor derivatives such as goodies
+virtual ~Actor()
+Virtual destructor implemented in order to unlink student world pointer Virtual so it can be redefined in a base class if necessary
+Class Agent : public Actor
+Agent::Agent(StudentWorld* world,int imageID,int startX, int startY, int startDirection,double size,int depth) :Actor(imageID, startX, startY, startDirection, size, depth) {m_world = world;}
+Agent is a derivative of Actor. Since parameters are different for every agent, nothing was predefined and an initializer list was used.
+Virtual void doSomething() = 0
+Pure virtual due to this function changing completely with every single type of Agent
+virtual bool isDead() { return healthpoints <= 0; }
+Since agents all have hp, isDead is redefined so that it is based on their health reaching or going under 0
+double getSpeed(){ return speed;}
+This function is not virtual at all since the implementation does not change for any agent. In my code, I had speed indicate vertical speed to make some of the implementations for agent derivatives easier. 
+void setVerticalSpeed(double input) {speed = input;}
+Simple setter function that’s implementation remains consistent throughout agent derivatives, hence why it is not virtual
+virtual bool isCollisionAvoidanceWorthyActor() { return true; }
+Redefining this bool function since every agent is considered to be true for the condition
+int getHealth() {return healthpoints;}
+Simple getter function that’s implementation remains consistent throughout agent derivatives, hence why it is not virtual
+void takeDamage(int dmg) {healthpoints -= dmg;}
+Simple decrementing function that’s implementation remains consistent throughout agent derivatives, hence why it is not virtual. Since all agents take damage in the same way, I will never redefine it in a subclass
+bool isOverlappingWithGR();
+This was my function whose pseudocode is provided in the spec. Since every agent has an interaction with a ghostracer when they are in contact, I made a non-virtual bool to detect if they overlap.
+virtual void Spray() = 0
+This pure virtual  function gets redefined in every agent derivative but is something that all agents have, since every agent besides GhostRacer is affected by holy water in some way. 
+virtual bool isSprayable() { return false; }
+This bool returns false by default. The bool is virtual since it needs to be redefined in subclasses. Although the majority of Agents are sprayable with holy water (the only exception being ghostracer), I could have initialized it to true and changed it for ghostracer only. But for added “security” I chose to leave it as false and only toggle it on for the subclasses explicitly.
+Class GhostRacer
+GhostRacer::GhostRacer(StudentWorld* world, int imageID, int startX, int startY, int startDirection, double size, int depth) :
+	Agent(world, imageID, startX, startY, startDirection, size, 0, 0, 100){water_tank = 10;}
+Constructor here now uses constants in the initializer list of Agent, since for all ghost racers, these inputs will be constant
+Water_tank is used to keep track of ammo count for holy water shots
+virtual void doSomething();
+virtual since it was redefined from a higher up class. This function follows the spec in terms of logic and doesn’t deviate at all.
+void increaseTank(int x) {water_tank += x;}
+Simple decrementing function that’s implementation is unique, hence why it is not virtual
+ void increaseTank(int y) {water_tank -=y;}
+Simple decrementing function that’s implementation is unique, hence why it is not virtual
+ void getTank() {return water_tank;}
+Simple getter function that’s implementation is unique, hence why it is not virtual
+void spin()
+Not virtual since it is unique to ghost racers only. This function follows the spec in terms of logic and doesn’t deviate at all.
+Class Borderline : public Actor
+BorderLine::BorderLine(StudentWorld* world, int imageID, int startX, int startY) : Actor(world, imageID, startX, startY, 0, 2.0, 1) {isdead = false;}
+Constructor now uses a constant in the initializer list of Actor, since for all borderlines (both white and yellow), these inputs will be constant.
+ Private bool isdead is now added since health points aren’t appropriate for borderlines
+virtual void doSomething();
+virtual since it was redefined from a higher up class. This function follows the spec in terms of logic and doesn’t deviate at all.
+virtual bool isDead(){return isdead;}
+virtual since it was redefined from a higher up class. The function now returns a private bool value
+Class Pedestrian : public Agent
+Pedestrian :: Pedestrian(StudentWorld* world, int imageID, int startX, int startY, int startDirection, double size, int depth, double horizontal_speed, int mvd) : Agent(world, imageID, startX, startY, startDirection, size, depth, -4.0, 2)
+{
+	horiz_speed = horizontal_speed;
+	movement_plan_distance = mvd;
+}
+Constructor here now uses constants in the initializer list of Agent, since for all Pedestrians, these inputs are constant. Furthermore, a private member variable is tracked (horizontal speed) since for ghostracer and borderline this variable was irrelevant 
+double getHorizSpeed() const { return horiz_speed; }
+void setHorizSpeed(double sp) { horiz_speed = sp; }
+Simple getter/setter functions whose implementations remain consistent among all pedestrians
+virtual void doSomething();
+A lot of the implementation between human and zombie pedestrians’ dosomething was very similar (specifically their movement) 
+I decided to put their movement related implementation in the base class and call Pedestrian :: doSomething() in both zombieped and humanped to avoid code duplication
+Virtual since needs to be redefined later
+virtual bool isSprayable() { return true; }
+All pedestrians are intractable with holywater, so return true for all 
+Virtual since this is a redefinition of a parent class
+virtual void Spray() {return;}
+Here spray returns nothing
+Rather than have this as a pure virtual function, I realized that human ped is still a sprayable object since holywater can interact with it(i.e. Holywater stops on contact with human peds), but there is no spray function since spraying them with water does nothing. Thus, in human ped, i don't redefine this function, whereas in zombie ped, I do.
+Class HumanPedestrian : public Pedestrian
+HumanPedestrian :: HumanPedestrian(StudentWorld* world, int startX, int startY) : Pedestrian(world, IID_HUMAN_PED, startX, startY, 0, 2.0, 0, 0, 0){
+}
+Constructor passes in constants for human ped into initializer list. Body is empty since everything we need is defined through pedestrian, which accepts horizontal_speed and minimum_value_distance as parameters. 
+void doSomething() {
+Follows the spec 
+After the overlapping with GR is detected, the parent class, Pedestrian’s do Something is called since that part of the implementation (the actual movement) is the same in both zombie ped and human ped
+Class ZombiePedestrian : public Pedestrian
+ZombiePedestrian::ZombiePedestrian(StudentWorld* world, int startX, int startY) : Pedestrian(world, IID_ZOMBIE_PED, startX, startY, 0, 3.0, 0, 0, 0) {
+	tick = 0;
+}
+Private variable tick is created in order to keep track of when to make attack sound
+void doSomething()
+Follows spec 
+After overlap with GR is detected and the direction, horizontal_speed, and sound are played if appropriate, the parent class, Pedestrian’s doSomething is called since that part of the implementation (the actual movement) is the same in both zombie ped and human ped
+void Spray()
+Takes damage equal to 1 point of hp and accesses a function in StudentWorld if it dies, which enables the chance for a health goodie to spawn
+Class ZombieCab : public Agent
+ZombieCab::ZombieCab(StudentWorld* world, int startX, int startY, double vert_sp) : Agent(world, IID_ZOMBIE_CAB, startX, startY, 90, 4.0, 0, vert_sp, 3)
+{
+	horiz_speed = 0;
+	isAlreadyDamaged = false;
+	movement_plan_distance = 0;
+}
+Intializer list initializes specific constants true for all zombie cabs
+New private variables are assigned
+Horiz_speed keeps track of horizontal speed
+isAlreadyDamaged is a bool that tracks whether zombiecab has already damaged ghostracer so multiple collisions don’t occur
+Movement_plan_distance is part of the spec
+doSomething()
+Follows the spec
+When the speed needs to change depending on what actors are present in the lane, a helper function is called in student world to iterate through the container (vector) of actors present in the world
+*helper function discussed later on in report
+void Spray()
+Takes damage equal to 1 point of hp and accesses a function in StudentWorld if it dies, which enables the chance for a oil slick to spawn
+Class GhostRacerActivatedObject : public Actor
+GhostRacerActivatedObject :: GhostRacerActivatedObject(StudentWorld* world, int imageID, int startX, int startY, int startDirection, double size, int depth, double startVert, double startHoriz) : Actor(world, imageID, startX, startY, startDirection, size, depth)
+{
+	horizontal_speed = startHoriz;
+	vertical_speed = startVert;
+	isdead = false;
+}
+Constructor accepts parameters for horizontal and vertical speed, since they change depending on object type
+Bools are used to keep track of health instead of hp
+virtual void doSomething()
+Virtual since this changes from object to object. Implementation involves basic movement relative to ghostracer 
+I decided to put their movement related implementation in the base class and call GhostRacerActivatedObject :: doSomething() in all the goodie classes
+double getHorizSpeed() const { return horizontal_speed; }
+void setHorizSpeed(double sp) { horizontal_speed = sp; };
+double getVertSpeed() const { return vertical_speed; }
+void setVertSpeed(double sp) { vertical_speed = sp; }
+All non-virtual getter and setter functions
+virtual bool isDead() { return isdead; };
+Switching to bools to keep track of status instead of hp;
+void setDead() {isdead = true;}
+setDead() simply kills an object, allowing them to be taken out of the game if necessary
+virtual bool isSprayable() { return false; }
+Not all pedestrians are intractable with holywater, so return false generally(redefined in lower classes)
+Virtual since this is a redefinition of a parent class
+virtual void Spray() {
+	return;
+}
+Not pure-virtual since for classes that don't interact such as soul-goodies, no redefinition of function is necessary
+Class OilSlick : public GhostRacerActivatedObject
+OilSlick::OilSlick(StudentWorld* world, int startX, int startY) : GhostRacerActivatedObject(world, IID_OIL_SLICK, startX, startY, 0, randInt(2, 5), 2, -4, 0){}
+No member variables necessary, everything passed in as parameter into GhostRacerActivatedObject 
+randInt used to generate random size
+void doSomething()
+First calls GhostRacerActivatedObject’s doSomething()
+Checks to see if goodie is overlapping with ghostraccer and if it is, cause ghostracer to spin
+*constructors for goodies not necessary since they are very straightforward and use no member variables*
+Class HealingGoodie : public GhostRacerActivatedObject
+void doSomething()
+First calls GhostRacerActivatedObject’s doSomething()
+Checks to see if goodie is overlapping with ghostraccer and if it is, cause ghostracer to heal up to 100
+bool isSprayable() { return true; }
+Is able to be sprayed
+virtual void Spray() {
+		setDead();
+	}
+If sprayed, set status to dead so it breaks
+Class HolyWaterGoodie : public GhostRacerActivatedObject
+void doSomething()
+First calls GhostRacerActivatedObject’s doSomething()
+Checks to see if goodie is overlapping with ghostraccer and if it is, cause ghostracer to heal up to increase tank by 10
+bool isSprayable() { return true; }
+Is able to be sprayed
+virtual void Spray() {
+		setDead();
+	}
+If sprayed, set status to dead so it breaks
+Class SoulGoodie: public GhostRacerActivatedObject
+void doSomething()
+First calls GhostRacerActivatedObject’s doSomething()
+Checks to see if goodie is overlapping with ghostraccer and if it is, cause the souls for the level to be decremented by 1, set the goodie to dead and increase the score
+Class HolyWaterProjectile: public GhostRacerActivatedObject
+HolyWaterProjectile::HolyWaterProjectile(StudentWorld* world, int startX, int startY, int startDirection) : GhostRacerActivatedObject(world, IID_HOLY_WATER_PROJECTILE, startX, startY, startDirection, 1.0, 1, 0, 0)
+{
+	maximum_travel_distance = 0;
+}
+Private int maximum_travel_distance instantiated to 0
+This keep tracks of when the water projectile has reached max range and dissipates
+void doSomething()
+Follows spec with the help of the helper function directly underneath this method in the report
+Has another helper function in world that allows holy projectile to interact with the first sprayable actor it collides with
+bool isActorOverlappingWithHWP(Actor* a)
+Takes in actor and uses same algorithm as was provided in the spec to check if the actor is overlapping with the projectile
+This method is called in student world in order to differentiate between sprayable and non sprayable actors
+
+
+STUDENT WORLD:
+StudentWorld(std::string assetPath); implementation provided in spec
+Virtual int init:
+Sets private member variable SoulsForLevel with the help of a helper function getLevel() (very straightforward implementation provided in spec)
+Dynamically creates new ghostracer
+Adds in yellow and white borderlines (as provided in the spec
+Uses my updateGameText function which uses oss to create the string necessary to set the game stat text.  
+return GWSTATUS_CONTINUE_GAME;
+int move()
+Have the ghostracer do something
+If it dies, delete it and declives before returning the status for death
+Have every actor in my actor container(vector) doSomething. 
+After each moves, check to see if their move has caused the ghostracer to die, and if so, delete the ghostracer and declives before returning the status for death 
+If the ghostracer hasn’t died yet
+If (SoulsForLevel <= 0) { // if level has been finished
+                  increaseScore(bonusPts); //store score
+                    delete m_ghostracer;
+                    m_ghostracer = nullptr;
+                    cleanUp();
+                    return GWSTATUS_FINISHED_LEVEL;
+removeDeadActors() (implementation below)
+bonusPts--; (-1 each tick)
+setGameStatText(updateGameText());
+Add in new borders like shown in the spec
+Add in pedestrians like shown in the spec
+For adding the ZombieCabs, I used a couple of helper functions (shown later)
+Bool addHere = true;
+Int cur_lane = randInt(1,3) //representing 3 lanes
+For loop 3 times
+Bool canAdd = true
+Loop through actor vect
+If actor is in the same lane as curlane and is collision worthy, or ghostracer is in the lane
+If actor’s y is less than or equal to view/height/3 or the ghostracer is in the lane
+canAdd is set to false
+If (canAdd is still true)
+init_speed = (m_ghostracer->getSpeed()) + randInt(2, 4);
+                startX = getLaneCenter(cur_lane);
+                startY = SPRITE_HEIGHT / 2;
+                addHere = true;
+                Break;
+Reset canAdd to true
+canAdd = true;
+Loop through actor vect
+If actor is in the same lane as curlane and is collision worthy
+If actor’s y is less than or equal to 2 *view/height/3 
+canAdd is set to false
+           If (canAdd is still true)
+init_speed = (m_ghostracer->getSpeed()) + randInt(2, 4);
+                startX = getLaneCenter(cur_lane);
+                startY = SPRITE_HEIGHT / 2;
+                addHere = true;
+break;
+            }
+            cur_lane++;
+            if (cur_lane > 3)
+                cur_lane = 1; //set cur_lane to the next road as long as it's not greater than 3
+Lastly, if addHere was ticked as true in either of the 2 cases, we push a NewZombieCab in  at the specified startX, startY, and init speed for the vertical initial speed
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+HELPER FUNCTIONS:
+ bool isActorInFrontOfCab(double x, double y);
+For the actors in my vector:
+If the actor’s lane is the same as the coordinate passed in, the y value is within the 96 pixel vertical range, and the actor is a collision avoidance worthy actor
+Return true;
+	If the for loop ends and nothing has been returned, 
+		Return false;
+
+
+
+  bool isActorBehindCab(double x, double y); 
+For the actors in my vector:
+If the actor’s lane is the same as the coordinate passed in, the y value is within the 96 pixel vertical range but in the negative, and the actor is a collision avoidance worthy actor
+Return true;
+	If the for loop ends and nothing has been returned, 
+		Return false;
+
+
+
+
+  int getLane(double x); //returns 1, 2, 3 based on the x coord where 
+1 is the left lane, 2 is the mid lane, and 3 is the right lane
+  int getLaneCenter(int x); // returns lane center based on the lane (1, 2, 3)
+bool HolyWaterAffectingActor(HolyWaterProjectile* a);
+	For actor in actor vect,
+		If the actor is sprayable and a->isActorOverlappingWithHWP 
+			Spray the actor;
+			Return true; //so only first actor affected
+	Return false;
+ void addSprayInFrontOfGr(double x, double y) // push_back new spray into vector at coords = to the input parameters
+ void ChanceSpawnHealthGoodie(double x, double y); // 1/5th chance to push_back new health goodie into vector at coords = to the input parameters
+ void ChanceSpawnOilSlick(double x, double y); // 1/5th chance to push_back new oilSlickinto vector at coords = to the input parameters
+string StudentWorld :: updateGameText()
+{
+    ostringstream oss;
+    oss.setf(ios::fixed);
+    oss << string with right spacing including score, level, soulsrequiredtofinishlevel, health, tank, bonuspoints
+    string gameText = oss.str();
+    return gameText;
+}
+
