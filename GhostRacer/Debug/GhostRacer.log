@@ -1,0 +1,15 @@
+﻿  StudentWorld.cpp
+E:\Desktop\GhostRacer\GhostRacer\StudentWorld.cpp(77,23): warning C4018: '<': signed/unsigned mismatch
+E:\Desktop\GhostRacer\GhostRacer\StudentWorld.cpp(104,17): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+E:\Desktop\GhostRacer\GhostRacer\StudentWorld.cpp(141,31): warning C4018: '<': signed/unsigned mismatch
+E:\Desktop\GhostRacer\GhostRacer\StudentWorld.cpp(156,31): warning C4018: '<': signed/unsigned mismatch
+E:\Desktop\GhostRacer\GhostRacer\StudentWorld.cpp(256,23): warning C4018: '<': signed/unsigned mismatch
+E:\Desktop\GhostRacer\GhostRacer\StudentWorld.cpp(265,23): warning C4018: '<': signed/unsigned mismatch
+E:\Desktop\GhostRacer\GhostRacer\StudentWorld.cpp(300,23): warning C4018: '<': signed/unsigned mismatch
+E:\Desktop\GhostRacer\GhostRacer\StudentWorld.cpp(312,59): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+E:\Desktop\GhostRacer\GhostRacer\StudentWorld.cpp(312,56): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+E:\Desktop\GhostRacer\GhostRacer\StudentWorld.cpp(319,57): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+E:\Desktop\GhostRacer\GhostRacer\StudentWorld.cpp(319,54): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+E:\Desktop\GhostRacer\GhostRacer\StudentWorld.cpp(327,52): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+E:\Desktop\GhostRacer\GhostRacer\StudentWorld.cpp(327,49): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  GhostRacer.vcxproj -> E:\Desktop\GhostRacer\Debug\GhostRacer.exe
